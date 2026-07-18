@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>蒲城县燃气企业摸排分布图</title>
+    <!-- 针对手机端进行自适应优化 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- 引入 Leaflet 的 CSS 和 JS，使用 HTTPS 确保在 GitHub Pages 正常加载 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: sans-serif; }
+        #map { height: 100%; width: 100%; }
+        .leaflet-popup-content-wrapper { border-radius: 8px; }
+        .popup-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #333; }
+        .popup-status.visited { color: #1e8e3e; font-weight: bold; font-size: 14px; }
+        .popup-status.unvisited { color: #d93025; font-weight: bold; font-size: 14px; }
+        .popup-type { color: #666; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // 蒲城县中心坐标
+        var map = L.map('map').setView([34.95, 109.58], 12);
+        
+        // 使用高德地图瓦片服务 (HTTPS)
+        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+            subdomains: ['1', '2', '3', '4'],
+            maxZoom: 18,
+            attribution: '© 高德地图'
+        }).addTo(map);
+
+        // 自定义红绿图标
+        var greenIcon = new L.Icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+
+        var redIcon = new L.Icon({
+          iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+
+        // 注入包含您提供的所有气站坐标及状态的数据
+        var gasData = [{"name": "蒲城县凯利液化气有限责任公司", "lon": 109.6069, "lat": 34.93, "type": "液化气", "visited": false}, {"name": "蒲城县海豚液化气有限公司", "lon": 109.811, "lat": 34.956, "type": "液化气", "visited": false}, {"name": "蒲城县王家液化气站", "lon": 109.648, "lat": 35.05, "type": "液化气", "visited": false}, {"name": "蒲城县荆姚镇双龙燃气有限公司", "lon": 109.456, "lat": 34.898, "type": "液化气", "visited": false}, {"name": "陕西洁康液化气有限公司", "lon": 109.61, "lat": 34.948, "type": "液化气", "visited": true}, {"name": "中国石油领航加油加气站", "lon": 109.524, "lat": 35.008, "type": "天然气", "visited": false}, {"name": "延长壳牌蒲大路加气站", "lon": 109.696, "lat": 34.91, "type": "天然气", "visited": true}, {"name": "延长壳牌五陵路分公司", "lon": 109.6, "lat": 34.97, "type": "天然气", "visited": true}, {"name": "渭南蒲城华气新能源有限公司", "lon": 109.648, "lat": 35.05, "type": "天然气", "visited": false}, {"name": "蒲城五原石油气化有限公司", "lon": 109.57, "lat": 34.925, "type": "天然气", "visited": false}, {"name": "蒲城县中天洋天然气有限责任公司", "lon": 109.586, "lat": 34.955, "type": "天然气", "visited": true}, {"name": "蒲城县中能加气站有限公司", "lon": 109.491, "lat": 34.899, "type": "天然气", "visited": false}, {"name": "蒲城县兴盛加气有限公司", "lon": 109.686, "lat": 34.84, "type": "天然气", "visited": false}, {"name": "蒲城县沣源油业有限公司", "lon": 109.433, "lat": 34.955, "type": "天然气", "visited": false}, {"name": "环城燃气北环路加气站", "lon": 109.596, "lat": 34.97, "type": "天然气", "visited": false}, {"name": "环城燃气城南新区加气站", "lon": 109.578, "lat": 34.933, "type": "天然气", "visited": true}, {"name": "蒲城宏远城镇天然气有限公司", "lon": 109.811, "lat": 34.956, "type": "天然气", "visited": true}, {"name": "蒲城民东新能源有限公司", "lon": 109.578, "lat": 34.956, "type": "天然气", "visited": true}, {"name": "蒲城隆丰天然气有限公司", "lon": 109.69, "lat": 34.895, "type": "天然气", "visited": false}];
+        
+        // 循环添加标注点
+        gasData.forEach(function(item) {
+            var icon = item.visited ? greenIcon : redIcon;
+            var statusClass = item.visited ? 'visited' : 'unvisited';
+            var statusText = item.visited ? '🟢 已完成摸排' : '🔴 待摸排';
+            
+            var popupContent = '<div class="popup-title">' + item.name + '</div>' +
+                               '<div class="popup-status ' + statusClass + '">' + statusText + '</div>' +
+                               '<div class="popup-type">气源类型：' + item.type + '</div>';
+            
+            L.marker([item.lat, item.lon], {icon: icon})
+             .bindPopup(popupContent)
+             .addTo(map);
+        });
+    </script>
+</body>
+</html>
